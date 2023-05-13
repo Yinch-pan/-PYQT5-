@@ -29,6 +29,7 @@ class BaseBoard(QWidget):
         self.wincondition = 7.5
         self.is_over = False
         self.zhong = False
+        self.gridhistory=collections.deque()
         self.history = collections.deque()
         self.setGeometry(100, 100, self.wide, self.high)
         self.setWindowTitle('围棋游戏')
@@ -81,6 +82,7 @@ class BaseBoard(QWidget):
         self.player1_timer.stop()
         if self.zhong == False:
             self.history.clear()
+            self.gridhistory.clear()
             QMessageBox.information(self, '提子', "请单击棋盘把死棋提取,随后再次点击数目按钮")
             self.zhong = True
         else:
@@ -137,6 +139,7 @@ class BaseBoard(QWidget):
         self.player = 1
         self.zhong = False
         self.history.clear()
+        self.gridhistory.clear()
         if self.is_over == True:
             self.win_label.close()
             self.is_over = False
@@ -156,6 +159,7 @@ class BaseBoard(QWidget):
         self.n, self.red, self.grey, self.timeju, self.timebu, self.wincondition = map(float, text.split())
         self.n, self.red, self.grey, self.timeju, self.timebu = int(self.n), int(self.red), int(self.grey), int(
             self.timeju), int(self.timebu)
+        self.n=min(self.n,50)
         self.timeju=min(self.timeju,59)
         self.timebu=min(self.timeju,59*60)
         self.restart()
@@ -305,6 +309,9 @@ class BaseBoard(QWidget):
             return
         self.player = 3 - self.player
         self.history.append((0, 0, set(), 3))
+        self.gridhistory.append(''.join([''.join(map(str,self.grid[i])) for i in range(1,self.n+1)]))
+
+
         self.blockmove()
         self.taiji_label.close()
         self.drawtaiji()
@@ -409,6 +416,7 @@ class BaseBoard(QWidget):
             if self.zhong == True:
                 if self.grid[i][j] == 0: return
                 self.history.append((i, j, set(), self.grid[i][j]))
+
                 self.grid[i][j] = 0
             else:
                 if self.grid[i][j] != 0: return
@@ -420,6 +428,17 @@ class BaseBoard(QWidget):
                 for x, y in t: self.grid[x][y] = 0
                 if not t and not self.Check(self.player, i, j, 0): return
                 self.history.append((i, j, t, 3 - self.player))
+
+                state=''.join([''.join(map(str, self.grid[i])) for i in range(1, self.n + 1)])
+                if state in self.gridhistory:
+                    self.player=3-self.player
+                    self.undo()
+                    self.msg_box('打劫!')
+                    self.gridhistory.append(state)
+                    return
+
+                self.gridhistory.append(state)
+
                 self.grid[i][j] = self.player
                 self.player = 3 - self.player
                 self.blockmove()
@@ -487,6 +506,7 @@ class BaseBoard(QWidget):
             if self.red == 0 and self.is_over == False:
                 self.player = 3 - self.player
                 x, y, t, p = self.history.pop()
+                self.gridhistory.pop()
                 for a, b in t:
                     self.grid[a][b] = p
                 self.grid[x][y] = 0
