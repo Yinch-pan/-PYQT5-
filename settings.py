@@ -60,7 +60,7 @@ class settings_window(QDialog):
 
         self.label = QLabel(self)
         self.label.setText(
-            "灰色棋子为不可被吃,不可移动的障碍物\n红色棋子为不可被吃障碍物,每步随机向一个可以移动的方向移动一步\n 本系统没有判断打劫的功能,请自行遵守棋规")
+            "灰色棋子为不可被吃,不可移动的障碍物\n红色棋子为不可被吃障碍物,每步随机向一个可以移动的方向移动一步\n 如有其他未实现的功能,请自行遵守棋规")
         layout.addWidget(self.label, 7, 0, 1, 2)
         # 设置窗口的布局
         self.setLayout(layout)
