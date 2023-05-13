@@ -430,7 +430,7 @@ class BaseBoard(QWidget):
                 self.history.append((i, j, t, 3 - self.player))
 
                 state=''.join([''.join(map(str, self.grid[i])) for i in range(1, self.n + 1)])
-                if state in self.gridhistory:
+                if state in self.gridhistory and t:
                     self.player=3-self.player
                     self.undo()
                     self.msg_box('打劫!')
