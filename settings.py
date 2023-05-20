@@ -12,8 +12,6 @@ class settings_window(QDialog):
         self.initUI()
 
     def initUI(self):
-        # 创建一个垂直布局
-        # layout = QVBoxLayout()
         layout = QGridLayout()
         # 创建一个标签和一个文本框，并将它们添加到布局中
         label1 = QLabel("棋盘长宽:", self)
@@ -60,7 +58,7 @@ class settings_window(QDialog):
 
         self.label = QLabel(self)
         self.label.setText(
-            "灰色棋子为不可被吃,不可移动的障碍物\n红色棋子为不可被吃障碍物,每步随机向一个可以移动的方向移动一步\n 如有其他未实现的功能,请自行遵守棋规")
+            "灰色棋子为不可被吃,不可移动的障碍物\n红色棋子为不可被吃障碍物,每步随机向一个可以移动的方向移动一步\n可以点击鼠标落下灰色棋子,用于初始化局面,再次右键灰色棋子,可以转化为红色棋子\n右键红色棋子,则设置为空\n如有其他未能完善的规则,请自行遵守棋规")
         layout.addWidget(self.label, 7, 0, 1, 2)
         # 设置窗口的布局
         self.setLayout(layout)
@@ -82,7 +80,12 @@ class settings_window(QDialog):
 
     def onButtonClicked(self):
         # 当确认按钮被单击时，检查文本框中的文本是否为空
-        if not self.textbox1.text() or not self.textbox2.text() or not self.textbox3.text() or not self.textbox4.text() or not self.textbox5.text() or not self.textbox6.text():
+        if not self.textbox1.text() \
+                or not self.textbox2.text() \
+                or not self.textbox3.text() \
+                or not self.textbox4.text() \
+                or not self.textbox5.text() \
+                or not self.textbox6.text():
             # 如果文本框为空，则弹出一个错误提示框
             QMessageBox.critical(self, "错误", "文本框不能为空！")
         else:
