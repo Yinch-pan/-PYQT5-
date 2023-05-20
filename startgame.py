@@ -29,7 +29,7 @@ class BaseBoard(QWidget):
         self.wincondition = 7.5
         self.is_over = False
         self.zhong = False
-        self.gridhistory=collections.deque()
+        self.gridhistory = collections.deque()
         self.history = collections.deque()
         self.setGeometry(100, 100, self.wide, self.high)
         self.setWindowTitle('围棋游戏')
@@ -76,7 +76,7 @@ class BaseBoard(QWidget):
         self.shumu_button.move(915, 720)
 
     def deadcheck(self):
-        if self.is_over==True:
+        if self.is_over == True:
             return
         self.player2_timer.stop()
         self.player1_timer.stop()
@@ -95,7 +95,7 @@ class BaseBoard(QWidget):
 
                     if self.grid[i][j] == 1: black += 1
                     if self.grid[i][j] == 2: white += 1
-                    k=len(vst)
+                    k = len(vst)
                     if (i, j) not in vst and self.grid[i][j] == 0:
                         vst.add((i, j))
                         color = set()
@@ -114,12 +114,12 @@ class BaseBoard(QWidget):
                                 else:
                                     color.add(self.grid[a][b])
                         if 1 in color and 2 in color:
-                            black += (len(vst)-k) / 2
-                            white += (len(vst)-k) / 2
+                            black += (len(vst) - k) / 2
+                            white += (len(vst) - k) / 2
                         elif 1 in color and 2 not in color:
-                            black += (len(vst)-k)
+                            black += (len(vst) - k)
                         elif 2 in color and 1 not in color:
-                            white += (len(vst)-k)
+                            white += (len(vst) - k)
             if black - white >= self.wincondition:
                 self.player = 2
                 self.win()
@@ -159,9 +159,9 @@ class BaseBoard(QWidget):
         self.n, self.red, self.grey, self.timeju, self.timebu, self.wincondition = map(float, text.split())
         self.n, self.red, self.grey, self.timeju, self.timebu = int(self.n), int(self.red), int(self.grey), int(
             self.timeju), int(self.timebu)
-        self.n=min(self.n,50)
-        self.timeju=min(self.timeju,59)
-        self.timebu=min(self.timeju,59*60)
+        self.n = min(self.n, 50)
+        self.timeju = min(self.timeju, 59)
+        self.timebu = min(self.timeju, 59 * 60)
         self.restart()
 
     def show_settings(self):
@@ -309,8 +309,7 @@ class BaseBoard(QWidget):
             return
         self.player = 3 - self.player
         self.history.append((0, 0, set(), 3))
-        self.gridhistory.append(''.join([''.join(map(str,self.grid[i])) for i in range(1,self.n+1)]))
-
+        self.gridhistory.append(''.join([''.join(map(str, self.grid[i])) for i in range(1, self.n + 1)]))
 
         self.blockmove()
         self.taiji_label.close()
@@ -331,11 +330,9 @@ class BaseBoard(QWidget):
 
         pen = QPen(Qt.black, 2, Qt.SolidLine)
         qp.setPen(pen)
-        for i in range(1,self.n-1):
+        for i in range(1, self.n - 1):
             qp.drawLine(50, 50 + i * a, 50 + a * (self.n - 1), 50 + i * a)
             qp.drawLine(50 + i * a, 50, 50 + i * a, 50 + a * (self.n - 1))
-
-
 
     def blockmove(self):
         # 移动阻隔块
@@ -364,6 +361,8 @@ class BaseBoard(QWidget):
         for i in range(len(nextpos)):
             a, b = nowpos[i]
             self.grid[a][b] = 0
+
+        for i in range(len(nextpos)):
             a, b = nextpos[i]
             self.grid[a][b] = 4
         for a, b in nextpos:
@@ -414,9 +413,8 @@ class BaseBoard(QWidget):
             j = round((y - 50) / a) + 1
 
             if self.zhong == True:
-                if self.grid[i][j] == 0: return
+                if self.grid[i][j] not in [1, 2]: return
                 self.history.append((i, j, set(), self.grid[i][j]))
-
                 self.grid[i][j] = 0
             else:
                 if self.grid[i][j] != 0: return
@@ -429,16 +427,15 @@ class BaseBoard(QWidget):
                 if not t and not self.Check(self.player, i, j, 0): return
                 self.history.append((i, j, t, 3 - self.player))
 
-                state=''.join([''.join(map(str, self.grid[i])) for i in range(1, self.n + 1)])
+                self.grid[i][j] = self.player
+                state = ''.join([''.join(map(str, self.grid[i])) for i in range(1, self.n + 1)])
                 if state in self.gridhistory and t:
-                    self.player=3-self.player
+                    self.player = 3 - self.player
                     self.undo()
-                    self.msg_box('打劫!')
+                    self.msg_box('不能在此处落子!')
                     self.gridhistory.append(state)
                     return
-
                 self.gridhistory.append(state)
-
                 self.grid[i][j] = self.player
                 self.player = 3 - self.player
                 self.blockmove()
@@ -446,26 +443,61 @@ class BaseBoard(QWidget):
                 self.drawtaiji()
                 self.switch_player()
             self.update()
+        if event.button() == Qt.RightButton:
+            x = event.x()
+            y = event.y()
+
+            if x < 50 or y < 50 or x > 850 or y > 850 or self.is_over == True:
+                return
+            a = 800 // (self.n - 1)
+            i = round((x - 50) / a) + 1
+            j = round((y - 50) / a) + 1
+            if self.grid[i][j] == 0:
+                self.grid[i][j]=3
+                t = set()
+                t |= self.Check(1, i, j - 1, 2)
+                t |= self.Check(1, i - 1,j , 2)
+                t |= self.Check(1, i,  j+ 1, 2)
+                t |= self.Check(1, i + 1, j, 2)
+                t |= self.Check(2, i, j - 1, 2)
+                t |= self.Check(2, i - 1, j, 2)
+                t |= self.Check(2, i, j + 1, 2)
+                t |= self.Check(2, i + 1, j, 2)
+                for x, y in t: self.grid[x][y] = 0
+                self.update()
+
+            elif self.grid[i][j] == 3:
+                self.grid[i][j]=4
+                self.red+=1
+                t = set()
+                t |= self.Check(1, i, j - 1, 2)
+                t |= self.Check(1, i - 1,j , 2)
+                t |= self.Check(1, i,  j+ 1, 2)
+                t |= self.Check(1, i + 1, j, 2)
+                t |= self.Check(2, i, j - 1, 2)
+                t |= self.Check(2, i - 1, j, 2)
+                t |= self.Check(2, i, j + 1, 2)
+                t |= self.Check(2, i + 1, j, 2)
+                for x, y in t: self.grid[x][y] = 0
+                self.update()
+            elif self.grid[i][j]==4:
+                self.grid[i][j]=0
+                self.update()
 
     def msg_box(self, msg):
         QMessageBox.critical(self, "错误", msg)
 
     def Check(self, col, posx, posy, state):
         # 判断是否有气
-        if self.grid[posx][posy] != col and state in [1, 2]:
-            return set()
+        if self.grid[posx][posy] != col and state in [1, 2]: return set()
         dx = [0, 0, -1, 1]
         dy = [1, -1, 0, 0]
-        que = collections.deque()
+        que, connect, air, vst = collections.deque(), set(), 0, set()
         que.append((posx, posy))
-        connect = set()
         connect.add((posx, posy))
-        air = 0
-        vst = set()
         while que:
             x, y = que.popleft()
             vst.add((x, y))
-
             for d in range(4):
                 a = x + dx[d]
                 b = y + dy[d]
@@ -476,11 +508,10 @@ class BaseBoard(QWidget):
                         que.append((a, b))
                         connect.add((a, b))
                     vst.add((a, b))
-        # state为0,表示能否落子
-        # state为1,表示能否提子
+        # state为0,表示能否落子,state为1,表示能否提子
         if state == 0:
             if air == 0:
-                self.msg_box("不能在此处落子")
+                self.msg_box("不能在此处落子!")
                 return False
             return True
         elif state == 1:
@@ -501,7 +532,7 @@ class BaseBoard(QWidget):
             self.update()
         else:
             if self.red != 0:
-                self.msg_box("红色棋子存在时,不能悔棋!")
+                self.msg_box("红色棋子存在过,不能悔棋!")
                 return
             if self.red == 0 and self.is_over == False:
                 self.player = 3 - self.player
@@ -513,7 +544,6 @@ class BaseBoard(QWidget):
                 self.taiji_label.close()
                 self.drawtaiji()
                 self.update()
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
