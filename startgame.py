@@ -27,6 +27,7 @@ class BaseBoard(QWidget):
         self.timeju = 30
         self.timebu = 60
         self.wincondition = 7.5
+        self.redtemp = 0
         self.is_over = False
         self.zhong = False
         self.gridhistory = collections.deque()
@@ -134,6 +135,8 @@ class BaseBoard(QWidget):
 
     def restart(self):
         self.initboard()
+        self.red -= self.redtemp
+        self.redtemp = 0
         self.randomredblock(self.red)
         self.randomgreyblock(self.grey)
         self.player = 1
@@ -161,7 +164,7 @@ class BaseBoard(QWidget):
             self.timeju), int(self.timebu)
         self.n = min(self.n, 50)
         self.timeju = min(self.timeju, 59)
-        self.timebu = min(self.timeju, 59 * 60)
+        self.timebu = min(self.timebu, 59 * 60)
         self.restart()
 
     def show_settings(self):
@@ -261,7 +264,6 @@ class BaseBoard(QWidget):
             self.player2_timer.start(1000)
         else:
             self.player2_timer.stop()
-
             self.player1_timer.start(1000)
 
     def start_timer(self):
@@ -453,11 +455,11 @@ class BaseBoard(QWidget):
             i = round((x - 50) / a) + 1
             j = round((y - 50) / a) + 1
             if self.grid[i][j] == 0:
-                self.grid[i][j]=3
+                self.grid[i][j] = 3
                 t = set()
                 t |= self.Check(1, i, j - 1, 2)
-                t |= self.Check(1, i - 1,j , 2)
-                t |= self.Check(1, i,  j+ 1, 2)
+                t |= self.Check(1, i - 1, j, 2)
+                t |= self.Check(1, i, j + 1, 2)
                 t |= self.Check(1, i + 1, j, 2)
                 t |= self.Check(2, i, j - 1, 2)
                 t |= self.Check(2, i - 1, j, 2)
@@ -467,12 +469,13 @@ class BaseBoard(QWidget):
                 self.update()
 
             elif self.grid[i][j] == 3:
-                self.grid[i][j]=4
-                self.red+=1
+                self.grid[i][j] = 4
+                self.red += 1
+                self.redtemp += 1
                 t = set()
                 t |= self.Check(1, i, j - 1, 2)
-                t |= self.Check(1, i - 1,j , 2)
-                t |= self.Check(1, i,  j+ 1, 2)
+                t |= self.Check(1, i - 1, j, 2)
+                t |= self.Check(1, i, j + 1, 2)
                 t |= self.Check(1, i + 1, j, 2)
                 t |= self.Check(2, i, j - 1, 2)
                 t |= self.Check(2, i - 1, j, 2)
@@ -480,8 +483,8 @@ class BaseBoard(QWidget):
                 t |= self.Check(2, i + 1, j, 2)
                 for x, y in t: self.grid[x][y] = 0
                 self.update()
-            elif self.grid[i][j]==4:
-                self.grid[i][j]=0
+            elif self.grid[i][j] == 4:
+                self.grid[i][j] = 0
                 self.update()
 
     def msg_box(self, msg):
@@ -544,6 +547,7 @@ class BaseBoard(QWidget):
                 self.taiji_label.close()
                 self.drawtaiji()
                 self.update()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
